@@ -1,0 +1,29 @@
+{
+  "name": "naguibot",
+  "version": "1.0.0",
+  "description": "Joke discord bot",
+  "keywords": [
+    "bot",
+    "discord"
+  ],
+  "homepage": "https://github.com/mizkyosia/naguibot#readme",
+  "bugs": {
+    "url": "https://github.com/mizkyosia/naguibot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mizkyosia/naguibot.git"
+  },
+  "license": "ISC",
+  "author": "MizKyosia",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cron": "^4.1.0",
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7"
+  }
+}
