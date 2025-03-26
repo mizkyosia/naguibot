@@ -33,6 +33,8 @@ module.exports = {
             return interaction.editReply(buildInfoMessage(allData));
         }
 
+        if(allData.length >= 10) return interaction.editReply({ flags: MessageFlags.Ephemeral, content: 'Le nombre maximum de messages (10) a été atteint !'});
+
         const channel = interaction.options.getChannel("channel"),
             hour = interaction.options.getNumber("hour"),
             minute = interaction.options.getNumber("minute");
