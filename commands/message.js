@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { InteractionContextType, MessageFlags } = require('discord.js');
 const cron = require('cron');
 
-const { getRandomMessage, buildInfoMessage } = require('../src/randomMessage');
+const { getRandomMessage, buildInfoMessage, buildRandomMessage } = require('../src/randomMessage');
 
 
 module.exports = {
@@ -16,6 +16,7 @@ module.exports = {
                 .addNumberOption(o => o.setName('minute').setDescription('Minute à laquelle le message s\'envoie').setMinValue(0).setMaxValue(59).setRequired(true))
         )
         .addSubcommand(s => s.setName('info').setDescription('Donne des infos sur le setup actuel du message'))
+        .addSubcommand(s => s.setName('fetch').setDescription('Renvoie un message aléatoire').addBooleanOption(o => o.setName('hide').setDescription('Rend le message visible uniquement par l\'auteur de la commande')))
     ,
     /**
      * 
@@ -24,8 +25,13 @@ module.exports = {
      * @returns 
      */
     async execute(interaction, client) {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         let subcommand = interaction.options.getSubcommand();
+
+        if (subcommand == "fetch") {
+            return interaction.reply({ flags: (interaction.options.getBoolean('hide') ? MessageFlags.Ephemeral : 0), ...await buildRandomMessage(interaction.guild, 'Message random') });
+        }
+
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         let allData = client.times.get(interaction.guildId) ?? [];
 
@@ -33,20 +39,18 @@ module.exports = {
             return interaction.editReply(buildInfoMessage(allData));
         }
 
-        if(allData.length >= 10) return interaction.editReply({ flags: MessageFlags.Ephemeral, content: 'Le nombre maximum de messages (10) a été atteint !'});
+        if (allData.length >= 10) return interaction.editReply({ flags: MessageFlags.Ephemeral, content: 'Le nombre maximum de messages (10) a été atteint !' });
 
         const channel = interaction.options.getChannel("channel"),
             hour = interaction.options.getNumber("hour"),
             minute = interaction.options.getNumber("minute");
 
         const newData = {
-            guildId: interaction.guildId,
             channelId: channel.id,
             hour,
             minute,
-            job: null
+            job: new cron.CronJob(`${minute} ${hour} * * *`, getRandomMessage.bind(null, interaction.guildId, channel.id, client))
         };
-        newData.job = new cron.CronJob(`${minute} ${hour} * * *`, getRandomMessage.bind(newData, client))
         newData.job.start();
         allData.push(newData);
 
